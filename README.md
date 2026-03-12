@@ -103,9 +103,9 @@ Several inconsistencies were corrected:
 
 - Trimmed all text fields like company, location, industry, stage
   
-  ```sql
-         SET company  = NULLIF(TRIM(company), ''),
-             location = NULLIF(TRIM(location), ''), ...;
+```sql
+        SET company  = NULLIF(TRIM(company), ''),
+            location = NULLIF(TRIM(location), ''), ...;
   ```
   
   - Standardized country names (for example 'United States' in replacement of 'United States.')
@@ -127,7 +127,7 @@ Data type of the columns ` percentage_laid_off` and `funds_raised_millions` data
 Dates were converted into SQL DATE format:
 
 ```sql
-STR_TO_DATE(date, '%m/%d/%Y')
+        STR_TO_DATE(date, '%m/%d/%Y')
 ```
 
 ### Duplicate Detection
