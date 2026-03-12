@@ -27,10 +27,9 @@ The analysis was implemented using **MySQL 8** and executed in **MySQL Workbench
 5. [Exploratory Data Analysis](#exploratory-data-analysis)  
 6. [Key Analytical Queries](#key-analytical-queries)  
 7. [Business Insights](#business-insights)  
-8. [SQL Skills Demonstrated](#sql-skills-demonstrated)  
-9. [Tools & Technologies](#tools--technologies)  
-10. [Potential Future Improvements](#potential-future-improvements)  
-11. [References](#References)
+8. [SQL Skills Demonstrated](#sql-skills-demonstrated)   
+9. [Potential Future Improvements](#potential-future-improvements)  
+10. [References](#References)
 
 ---
 
@@ -95,48 +94,96 @@ The project consists of two main SQL scripts:
 # Data Cleaning Process
 
 Real-world datasets often contain inconsistencies, duplicates, and missing values.
+At the begin of the process, it is best practice to create a staging file to preserve to raw table layoffs.csv file.
 
-### Duplicate Detection
-
-Duplicates were identified using:
-
-```sql
-ROW_NUMBER() OVER (PARTITION BY ...)
-```
-
-This allowed identification and removal of duplicate layoff events.
 
 ### Data Standardization
 
 Several inconsistencies were corrected:
 
-- Trimmed company names
-- Standardized country names
-- Normalized industry labels
-- Corrected location spelling
+- Trimmed all text fields like company, location, industry, stage
+  
+  ```sql
+         SET company  = NULLIF(TRIM(company), ''),
+             location = NULLIF(TRIM(location), ''), ...;
+  ```
+  
+- Normalized selected categorical values:
+       - Standardized country names (for example 'United States' in replacement of 'United States.')
 
-### Date Conversion
+ ```sql
+        UPDATE layoffs_staging
+       SET country = TRIM(TRAILING '.' FROM country)
+       WHERE country LIKE 'United States%';
+  ```
 
+       - Normalized industry labels (for example `Crypto` in replacement of 'CryptoCurrency')
+       - Corrected location spelling  by unifying Düsseldorf spelling to ASCII
+       
+### Parse and type-cast dates and numeric fields for consistent analysis and BI
+
+Most columns were defines as TEXT data in the raw table.
+There were  set to VARCHAR for efficiency.
+Data type of the columns ` percentage_laid_off` and `funds_raised_millions` data were set to DECIMAL
 Dates were converted into SQL DATE format:
 
 ```sql
 STR_TO_DATE(date, '%m/%d/%Y')
 ```
 
+### Duplicate Detection
+
+The strategy was to use the window function ROW_NUMBER() to detect the first occurrence of each identical record.
+Partitionning over all columns then make sure to clearly identify duplicated rows, that appears with `row_number` greater than 1
+
+Unique rows were identified by:
+
+```sql
+WITH numbered AS (
+  SELECT
+    *,
+    ROW_NUMBER() OVER (
+      PARTITION BY
+        company, location, industry,
+        total_laid_off, percentage_laid_off,
+        `date`, stage, country, funds_raised_millions
+      ORDER BY company
+    ) AS row_num
+  FROM layoffs_clean
+)
+SELECT
+  company, location, industry,
+  total_laid_off, percentage_laid_off,
+  `date`, stage, country, funds_raised_millions
+FROM numbered
+WHERE row_num = 1;
+```
+
+This allowed identification and removal of duplicate layoff events (row_num > 1).
+
 ### Handling Missing Data
 
 Techniques applied:
 
-- Empty values converted to NULL
-- Missing industries inferred using other records of the same company
-- Records missing both layoff metrics removed
-
-Example:
+- Missing industries inferred  by matching on company name using SELF JOIN
 
 ```sql
-COALESCE(total_laid_off, 0)
-```
+       UPDATE layoffs_clean t1
+       JOIN layoffs_clean t2
+         ON t1.company = t2.company
+       SET t1.industry = t2.industry
+       WHERE t1.industry IS NULL
+         AND t2.industry IS NOT NULL;
+  ```
 
+- Records missing both layoff metrics removed
+
+```sql
+       DELETE FROM layoffs_clean
+       WHERE total_laid_off IS NULL
+         AND percentage_laid_off IS NULL;
+```
+Basic data quality checks (ranges, impossible values) were made at the end on numerical columns to validate their integrity.
 ---
 
 # Exploratory Data Analysis
@@ -227,20 +274,12 @@ Key SQL features used:
 - ROW_NUMBER()
 - DENSE_RANK()
 - CASE
-- COALESCE
 - DATE_FORMAT
 - GROUP BY
 - CTE
 - Window functions
 
 ---
-
-# Tools & Technologies
-
-- MySQL 8
-- MySQL Workbench
-- SQL window functions
-- Relational databases
 
 ---
 
@@ -251,7 +290,6 @@ Possible extensions:
 - Data visualization using Tableau or Power BI
 - Predictive modeling using Python
 - Time-series forecasting
-- Combining layoffs data with macroeconomic indicators
 
 ---
 
