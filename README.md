@@ -108,19 +108,18 @@ Several inconsistencies were corrected:
              location = NULLIF(TRIM(location), ''), ...;
   ```
   
-- Normalized selected categorical values:
-       - Standardized country names (for example 'United States' in replacement of 'United States.')
+  - Standardized country names (for example 'United States' in replacement of 'United States.')
 
- ```sql
+```sql
        UPDATE layoffs_staging
        SET country = TRIM(TRAILING '.' FROM country)
        WHERE country LIKE 'United States%';
-  ```
+```
 
-       - Normalized industry labels (for example `Crypto` in replacement of 'CryptoCurrency')
-       - Corrected location spelling  by unifying Düsseldorf spelling to ASCII
+- Normalized industry labels (for example `Crypto` in replacement of 'CryptoCurrency')
+- Corrected location spelling  by unifying Düsseldorf spelling to ASCII
        
-### Parse and type-cast dates and numeric fields for consistent analysis and BI
+### Parse and type-cast dates and numeric fields for consistent use in data analysis and BI
 
 Most columns were defines as TEXT data in the raw table.
 There were  converted to VARCHAR for accuracy.
