@@ -93,8 +93,8 @@ The project consists of two main SQL scripts:
 
 # Data Cleaning Process
 
-Real-world datasets often contain inconsistencies, duplicates, and missing values.
-At the begin of the process, it is best practice to create a staging file to preserve to raw table layoffs.csv file.
+Real-world datasets often contain inconsistencies, duplicates, and missing values. <br>
+At the begin of the process, it is best practice to create a staging file to preserve to raw file layoffs.csv file.
 
 
 ### Data Standardization
@@ -112,7 +112,7 @@ Several inconsistencies were corrected:
        - Standardized country names (for example 'United States' in replacement of 'United States.')
 
  ```sql
-        UPDATE layoffs_staging
+       UPDATE layoffs_staging
        SET country = TRIM(TRAILING '.' FROM country)
        WHERE country LIKE 'United States%';
   ```
@@ -123,7 +123,7 @@ Several inconsistencies were corrected:
 ### Parse and type-cast dates and numeric fields for consistent analysis and BI
 
 Most columns were defines as TEXT data in the raw table.
-There were  set to VARCHAR for efficiency.
+There were  converted to VARCHAR for accuracy.
 Data type of the columns ` percentage_laid_off` and `funds_raised_millions` data were set to DECIMAL
 Dates were converted into SQL DATE format:
 
@@ -133,10 +133,10 @@ STR_TO_DATE(date, '%m/%d/%Y')
 
 ### Duplicate Detection
 
-The strategy was to use the window function ROW_NUMBER() to detect the first occurrence of each identical record.
-Partitionning over all columns then make sure to clearly identify duplicated rows, that appears with `row_number` greater than 1
+The strategy was to use the window function ROW_NUMBER() to detect the first occurrence of identical records (row_num = 1).
+Partitionning over all columns then make sure to clearly identify all duplicated rows, that appears with `row_number` greater than 1.
 
-Unique rows were identified by:
+Unique rows were identified by the following CTE:
 
 ```sql
 WITH numbered AS (
@@ -183,7 +183,7 @@ Techniques applied:
        WHERE total_laid_off IS NULL
          AND percentage_laid_off IS NULL;
 ```
-Basic data quality checks (ranges, impossible values) were made at the end on numerical columns to validate their integrity.
+
 ---
 
 # Exploratory Data Analysis
