@@ -30,7 +30,7 @@ The analysis was implemented using **MySQL 8** and executed in **MySQL Workbench
 8. [SQL Skills Demonstrated](#sql-skills-demonstrated)  
 9. [Tools & Technologies](#tools--technologies)  
 10. [Potential Future Improvements](#potential-future-improvements)  
-11. [Author](#author)
+11. [References](#References)
 
 ---
 
@@ -255,8 +255,8 @@ Possible extensions:
 
 ---
 
-# Author
+# References
 
-**Bertrand B. Tcheuffa**  
-Data Scientist / Data Analyst  
-Background in Software Engineering and Automated Systems
+Ultimate Data Analyst Bootcamp | SQL, Excel, Tableau, Power BI, Python, Azure
+
+https://www.youtube.com/watch?v=wQQR60KtnFY&t=32423s
