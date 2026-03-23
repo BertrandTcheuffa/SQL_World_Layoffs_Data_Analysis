@@ -24,12 +24,11 @@ The analysis was implemented using **MySQL 8** and executed in **MySQL Workbench
 2. [Dataset Description](#dataset-description)  
 3. [Project Architecture](#project-architecture)  
 4. [Data Cleaning Process](#data-cleaning-process)  
-5. [Exploratory Data Analysis](#exploratory-data-analysis)  
-6. [Key Analytical Queries](#key-analytical-queries)  
-7. [Business Insights](#business-insights)  
-8. [SQL Skills Demonstrated](#sql-skills-demonstrated)   
-9. [Potential Future Improvements](#potential-future-improvements)  
-10. [References](#References)
+5. [Exploratory Data Analysis (EDA)](#exploratory-data-analysis)  
+6. [Business Insights](#business-insights)  
+7. [SQL Skills Demonstrated](#sql-skills-demonstrated)   
+8. [Potential Future Improvements](#potential-future-improvements)  
+9. [References](#references)
 
 ---
 
@@ -94,26 +93,26 @@ The project consists of two main SQL scripts:
 # Data Cleaning Process
 
 Real-world datasets often contain inconsistencies, duplicates, and missing values. <br>
-At the begin of the process, it is best practice to create a staging file to preserve to raw file layoffs.csv file.
+At the begin of the process, it is best practice to create a staging file to preserve to raw file.
 
 
 ### Data Standardization
 
 Several inconsistencies were corrected:
 
-- Trimmed all text fields like company, location, industry, stage
+- Trimmed all text columns like company, location, industry, stage. It helps standardizing the columns for a later identification of duplicates.
   
 ```sql
-        SET company  = NULLIF(TRIM(company), ''),
-            location = NULLIF(TRIM(location), ''), ...;
-  ```
+SET company  = NULLIF(TRIM(company), ''),
+    location = NULLIF(TRIM(location), ''), ...;
+```
   
-  - Standardized country names (for example 'United States' in replacement of 'United States.')
+- Standardized country names (for example 'United States' is used in replacement of 'United States.')
 
 ```sql
-       UPDATE layoffs_staging
-       SET country = TRIM(TRAILING '.' FROM country)
-       WHERE country LIKE 'United States%';
+UPDATE layoffs_staging
+SET country = TRIM(TRAILING '.' FROM country)
+WHERE country LIKE 'United States%';
 ```
 
 - Normalized industry labels (for example `Crypto` in replacement of 'CryptoCurrency')
@@ -127,13 +126,13 @@ Data type of the columns ` percentage_laid_off` and `funds_raised_millions` data
 Dates were converted into SQL DATE format:
 
 ```sql
-        STR_TO_DATE(date, '%m/%d/%Y')
+STR_TO_DATE(date, '%m/%d/%Y')
 ```
 
-### Duplicate Detection
+### Duplicate removal
 
-The strategy was to use the window function ROW_NUMBER() to detect the first occurrence of identical records (row_num = 1).
-Partitionning over all columns then make sure to clearly identify all duplicated rows, that appears with `row_number` greater than 1.
+The strategy was to use the window function ROW_NUMBER() to detect the first occurrence of identical records (row_num = 1). All other occurences (row_num > 1) are removed.
+Partitionning over all columns helps identifying unique rows.
 
 Unique rows were identified by the following CTE:
 
@@ -158,13 +157,12 @@ FROM numbered
 WHERE row_num = 1;
 ```
 
-This allowed identification and removal of duplicate layoff events (row_num > 1).
 
 ### Handling Missing Data
 
 Techniques applied:
 
-- Missing industries inferred  by matching on company name using SELF JOIN
+- Missing industries are inferred  by matching on company name using SELF JOIN
 
 ```sql
        UPDATE layoffs_clean t1
@@ -175,40 +173,57 @@ Techniques applied:
          AND t2.industry IS NOT NULL;
   ```
 
-- Records missing both layoff metrics removed
+- Records missing both layoff metrics are removed.
 
 ```sql
        DELETE FROM layoffs_clean
        WHERE total_laid_off IS NULL
          AND percentage_laid_off IS NULL;
 ```
+Once the data was cleaned, the extraction of meaningful insights follows.
 
 ---
 
 # Exploratory Data Analysis
 
-Once the dataset was cleaned, SQL queries were used to analyze patterns such as:
+Prior to the EDA, basic data quality, time, amplitude and duplicates checks were performed again in the first place.
+
+
+SQL queries were used to analyze patterns such as:
 
 - Layoffs by company
 - Layoffs by industry
 - Layoffs by country
 - Layoffs over time
-- Layoff severity levels
+- Layoff severity levels...
 
-Severity categories were defined based on the percentage of workforce affected.
 
-| Category | Percentage |
-|------|------|
-| 100% | Entire workforce |
-| 50–99% | Severe layoffs |
-| 20–49% | Medium layoffs |
-| 1–19% | Minor layoffs |
+### Identifying the social impact by analysing companies, where the entire workforce was cancelled (percentage_laid_off = 1)
 
----
 
-# Key Analytical Queries
+```sql
+SELECT *
+FROM layoffs_clean
+WHERE percentage_laid_off = 1
+ORDER BY total_laid_off DESC
+LIMIT 50;
+```
+It appears that most companies shutdown were registered in the contruction, food and retail sector in the United States.
 
-## Total layoffs by company
+
+### Identifying the financial impact on investors by analysing well-funded companies that completly failed (percentage_laid_off = 1)
+
+```sql
+SELECT *
+FROM layoffs_clean
+WHERE percentage_laid_off = 1
+ORDER BY funds_raised_millions DESC
+LIMIT 50;
+```
+'Britishvolt', 'Quibi' and 'Delivero Australia' were  the best well-funded companies (2400 + 1800 + 1700.0 millions) that totally failed. 
+
+
+### Total layoffs by company
 
 ```sql
 SELECT company,
@@ -217,8 +232,25 @@ FROM layoffs_clean
 GROUP BY company
 ORDER BY total_laid_off DESC;
 ```
+Big tech companies like Amazon, Google, Meta, Saleforce and Meta laid off the most employees in the consiedered period due to the economic slowdown caused by the COVID-19 pandemic.
 
-## Monthly layoffs trend
+
+### Total layoffs by industry
+
+```sql
+SELECT
+  industry,
+  SUM(total_laid_off) AS total_laid_off
+FROM layoffs_clean
+WHERE total_laid_off IS NOT NULL
+GROUP BY industry
+ORDER BY total_laid_off DESC
+LIMIT 50;
+```
+The consumer and the retail industry were the most affected segment.
+
+
+### Monthly layoffs trend
 
 ```sql
 SELECT DATE_FORMAT(date, '%Y-%m') AS month,
@@ -227,17 +259,97 @@ FROM layoffs_clean
 GROUP BY month
 ORDER BY month;
 ```
+January 2023 with 84714 layoffs appears to be the month with the most layoffs.
 
-## Rolling cumulative layoffs
+
+### Rolling cumulative layoffs
 
 ```sql
-SUM(monthly_total_laid_off) OVER (ORDER BY month)
+WITH monthly_layoffs_cte AS (
+  SELECT
+    DATE_FORMAT(`date`, '%Y-%m') AS `month`,
+    SUM(total_laid_off) AS monthly_total_laid_off
+  FROM layoffs_clean
+  WHERE `date` IS NOT NULL
+    AND total_laid_off IS NOT NULL
+  GROUP BY `month`
+SELECT
+  `month`,
+  monthly_total_laid_off,
+  SUM(monthly_total_laid_off) OVER (ORDER BY `month`) AS rolling_total_laid_off -- Uses window function SUM() OVER() to perform the rolling total
+FROM monthly_layoffs_cte
+ORDER BY `month` ASC;
+```
+With rolling cumulative layoffs, the monthly progression of the layoffs can be observed.
+
+
+### Month-over-month change to spot spikes
+
+By establishing the side-by-side comparision between the actual monthly layoffs and the previous monthly layoffs, spikes can be spotted.
+This is achieved by a concatenation of CTEs.
+The first CTE is used to get the monthly layoffs. The second CTE uses the window function LAG() to get for each month the previous monthly layoffs.
+With both informations combined, the monthly absolute change and the monthly percentage change can be computed.
+
+```sql
+WITH monthly_cte AS (
+  SELECT
+    DATE_FORMAT(`date`, '%Y-%m') AS `month`,
+    SUM(total_laid_off) AS monthly_total_laid_off
+  FROM layoffs_clean
+  WHERE `date` IS NOT NULL
+    AND total_laid_off IS NOT NULL
+  GROUP BY DATE_FORMAT(`date`, '%Y-%m')
+),
+mom_cte AS (
+  SELECT
+    `month`,
+    monthly_total_laid_off,
+    LAG(monthly_total_laid_off) OVER (ORDER BY `month`) AS prev_month_total
+  FROM monthly_cte
+)
+SELECT
+  `month`,
+  monthly_total_laid_off,
+  prev_month_total,
+  (monthly_total_laid_off - prev_month_total) AS mom_abs_change,
+  CASE
+    WHEN prev_month_total IS NULL OR prev_month_total = 0 THEN NULL
+    ELSE (monthly_total_laid_off - prev_month_total) / prev_month_total
+  END AS mom_pct_change
+FROM mom_cte
+ORDER BY `month` ASC;
 ```
 
-## Top companies per year
+
+### Top companies per year
+
+For each year, which are the top five companies with the most layoffs?
+To answer that question, two CTEs have been used.
+In the first CTE, for each company, the yearly total of layoffs is computed.
+The second CTE calculates for each year and company a ranking measured by the total layoffs.
 
 ```sql
-DENSE_RANK() OVER (PARTITION BY year ORDER BY total_laid_off DESC)
+SELECT
+    company,
+    YEAR(`date`) AS `year`,
+    SUM(total_laid_off) AS total_laid_off
+  FROM layoffs_clean
+  WHERE `date` IS NOT NULL
+    AND total_laid_off IS NOT NULL
+  GROUP BY company, YEAR(`date`)
+),
+ranked_cte AS (
+-- CTE to rank the companies by year and total layoffs based on the previous one. 
+  SELECT
+    company, `year`, total_laid_off,
+    DENSE_RANK() OVER (PARTITION BY `year` ORDER BY total_laid_off DESC) AS ranking
+  FROM company_year_cte
+  WHERE `year` IS NOT NULL
+)
+SELECT * -- Get the top 5 companies by total layoffs
+FROM ranked_cte
+WHERE ranking <= 5
+ORDER BY `year` ASC, ranking ASC, company ASC;
 ```
 
 ---
@@ -247,7 +359,7 @@ DENSE_RANK() OVER (PARTITION BY year ORDER BY total_laid_off DESC)
 The analysis reveals:
 
 - Layoffs were concentrated among a small number of companies.
-- Certain sectors such as consumer tech and crypto were heavily affected.
+- Certain sectors such as consumer, tech and crypto were heavily affected.
 - Layoffs increased significantly during the 2022–2023 economic slowdown.
 - Some companies shut down completely while others reduced workforce moderately.
 
@@ -263,6 +375,8 @@ The analysis reveals:
 
 ### Analytical SQL
 - Aggregations
+- Filtering
+- Common Table Expression
 - Conditional logic
 - Window functions
 - Ranking queries
@@ -276,11 +390,9 @@ Key SQL features used:
 - DATE_FORMAT
 - GROUP BY
 - CTE
-- Window functions
 
 ---
 
----
 
 # Potential Future Improvements
 
