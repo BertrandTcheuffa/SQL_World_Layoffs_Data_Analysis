@@ -34,7 +34,7 @@ The analysis was implemented using **MySQL 8** and executed in **MySQL Workbench
 
 # Project Overview
 
-Large-scale layoffs in the technology sector became a major global phenomenon following the COVID-19 pandemic and the economic slowdown of 2022–2023.
+Large-scale layoffs in the technology sector became a major global phenomenon following the COVID-19 pandemic and the economic slowdown of 2022–2023.<br>
 
 This project analyzes layoffs across companies worldwide to answer questions such as:
 
@@ -285,9 +285,9 @@ With rolling cumulative layoffs, the monthly progression of the layoffs can be o
 
 ### Month-over-month change to spot spikes
 
-By establishing the side-by-side comparision between the actual monthly layoffs and the previous monthly layoffs, spikes can be spotted.
-This is achieved by a concatenation of CTEs.
-The first CTE is used to get the monthly layoffs. The second CTE uses the window function LAG() to get for each month the previous monthly layoffs.
+By establishing the side-by-side comparision between the actual monthly layoffs and the previous monthly layoffs, spikes can be spotted.<br>
+This is achieved by a concatenation of CTEs.<br>
+The first CTE is used to get the monthly layoffs. The second CTE uses the window function LAG() to get for each month the previous monthly layoffs.<br>
 With both informations combined, the monthly absolute change and the monthly percentage change can be computed.
 
 ```sql
@@ -323,10 +323,10 @@ ORDER BY `month` ASC;
 
 ### Top companies per year
 
-For each year, which are the top five companies with the most layoffs?
-To answer that question, two CTEs have been used.
-In the first CTE, for each company, the yearly total of layoffs is computed.
-The second CTE calculates for each year and company a ranking measured by the total layoffs.
+**For each year, which are the top five companies with the most layoffs?**<br>
+To answer this question, two CTEs were combined.<br>
+In the first CTE, for each company, the yearly total of layoffs is computed.<br>
+The second CTE calculates for each year and company a ranking measured by the total layoffs.<br>
 
 ```sql
 SELECT
