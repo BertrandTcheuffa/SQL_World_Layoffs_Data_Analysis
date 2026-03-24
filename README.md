@@ -3,8 +3,8 @@
 
 ## SQL Data Cleaning & Exploratory Data Analysis Project
 
-This project analyzes **global technology layoffs between 2020 and 2023** using SQL.  
-It demonstrates the **complete workflow of a data analyst**, from raw data preparation to analytical insight generation.
+This project analyzes **global layoffs evolution between 2020 and 2023** using SQL.  
+It demonstrates the **complete workflow of a data analyst / data scientist**, from raw data preparation to analytical insight generation.
 
 The objective of this project was to:
 
