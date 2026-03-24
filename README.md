@@ -1,5 +1,5 @@
 
-# Global Tech Layoffs Analysis (2020–2023)
+# Global Layoffs Analysis (2020–2023)
 
 ## SQL Data Cleaning & Exploratory Data Analysis Project
 
