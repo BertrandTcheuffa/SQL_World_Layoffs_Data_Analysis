@@ -20,7 +20,7 @@ The analysis was implemented using **MySQL 8** and executed in **MySQL Workbench
 
 # Table of Contents
 
-1. [Project Overview](#project-overview)  
+1. [Project Overview](#1.project-overview)  
 2. [Dataset Description](#dataset-description)  
 3. [Project Architecture](#project-architecture)  
 4. [Data Cleaning Process](#data-cleaning-process)  
@@ -32,7 +32,7 @@ The analysis was implemented using **MySQL 8** and executed in **MySQL Workbench
 
 ---
 
-# Project Overview
+# 1. Project Overview
 
 Large-scale layoffs in the technology sector became a major global phenomenon following the COVID-19 pandemic and the economic slowdown of 2022–2023.<br>
 
