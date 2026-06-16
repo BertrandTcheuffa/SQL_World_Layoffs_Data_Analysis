@@ -20,15 +20,15 @@ The analysis was implemented using **MySQL 8** and executed in **MySQL Workbench
 
 # Table of Contents
 
-1. [Project Overview](#1.project-overview)  
-2. [Dataset Description](#dataset-description)  
-3. [Project Architecture](#project-architecture)  
-4. [Data Cleaning Process](#data-cleaning-process)  
-5. [Exploratory Data Analysis (EDA)](#exploratory-data-analysis)  
-6. [Business Insights](#business-insights)  
-7. [SQL Skills Demonstrated](#sql-skills-demonstrated)   
-8. [Potential Future Improvements](#potential-future-improvements)  
-9. [References](#references)
+1. [Project Overview](#1-project-overview)  
+2. [Dataset Description](#2-dataset-description)  
+3. [Project Architecture](#3-project-architecture)  
+4. [Data Cleaning Process](#4-data-cleaning-process)  
+5. [Exploratory Data Analysis (EDA)](#5-exploratory-data-analysis)  
+6. [Business Insights](#6-business-insights)  
+7. [SQL Skills Demonstrated](#7-sql-skills-demonstrated)   
+8. [Potential Future Improvements](#8-potential-future-improvements)  
+9. [References](#9-references)
 
 ---
 
@@ -48,7 +48,7 @@ The project demonstrates how SQL can be used not only for **data extraction**, b
 
 ---
 
-# Dataset Description
+# 2. Dataset Description
 
 The dataset contains documented layoffs from technology companies between **2020 and 2023**.
 
@@ -68,7 +68,7 @@ Each row represents a **layoff event**.
 
 ---
 
-# Project Architecture
+# 3. Project Architecture
 
 ```
 layoffs-sql-analysis
@@ -90,7 +90,7 @@ The project consists of two main SQL scripts:
 
 ---
 
-# Data Cleaning Process
+# 4. Data Cleaning Process
 
 Real-world datasets often contain inconsistencies, duplicates, and missing values. <br>
 At the begin of the process, it is best practice to create a staging file to preserve to raw file.
@@ -184,7 +184,7 @@ Once the data was cleaned, the extraction of meaningful insights follows.
 
 ---
 
-# Exploratory Data Analysis
+# 5. Exploratory Data Analysis
 
 Prior to the EDA, basic data quality, time, amplitude and duplicates checks were performed again in the first place.
 
@@ -354,7 +354,7 @@ ORDER BY `year` ASC, ranking ASC, company ASC;
 
 ---
 
-# Business Insights
+# 6. Business Insights
 
 The analysis reveals:
 
@@ -365,7 +365,7 @@ The analysis reveals:
 
 ---
 
-# SQL Skills Demonstrated
+# 7. SQL Skills Demonstrated
 
 ### Data Cleaning
 - Duplicate detection
@@ -394,7 +394,7 @@ Key SQL features used:
 ---
 
 
-# Potential Future Improvements
+# 8. Potential Future Improvements
 
 Possible extensions:
 
@@ -404,7 +404,7 @@ Possible extensions:
 
 ---
 
-# References
+# 9. References
 
 Ultimate Data Analyst Bootcamp | SQL, Excel, Tableau, Power BI, Python, Azure
 
